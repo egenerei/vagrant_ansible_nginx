@@ -56,6 +56,17 @@ server {
         root /var/www/html/errors;  # Ensure this is the correct path
     }
 
+	location = /logo.png {
+        # Force the browser to download the logo.png image
+        add_header Content-Disposition "attachment; filename=logo.png";
+
+        # Serve the file from the appropriate directory
+        root /var/www/html;
+
+        # Ensure the file exists
+        try_files $uri =404;
+    }
+	
 	# pass PHP scripts to FastCGI server
 	#
 	#location ~ \.php$ {
