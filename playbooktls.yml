@@ -18,7 +18,7 @@
       file: 
         path: /etc/nginx/ssl 
         state: directory
-        mode: '0755'
+        mode: '0644'
 
     - name: Copiar certificado
       copy: 
@@ -63,10 +63,10 @@
         dest: /var/www/html/
         owner: www-data
         group: www-data
-        mode: '0755'
+        mode: '0644'
       notify:
       - Reiniciar nginx
-    
+
     - name: Verificar configuración de nginx
       command: nginx -t
       register: nginx_test
