@@ -6,6 +6,7 @@
     key_file: /etc/nginx/ssl/nginx.key
     cert_file: /etc/nginx/ssl/nginx.crt
     conf_file: /etc/nginx/sites-available/default
+    admin_passwd: /etc/nginx/admin/.htpasswd
     server_name: localhost
   tasks:
     - name: Instalar nginx
@@ -18,7 +19,13 @@
       file: 
         path: /etc/nginx/ssl 
         state: directory
-        mode: '0644'
+        mode: '0755'
+    
+    - name: Crear directorio para credenciales admin
+      file: 
+        path: /etc/nginx/admin 
+        state: directory
+        mode: '0755'
 
     - name: Copiar certificado
       copy: 
@@ -29,6 +36,11 @@
       copy: 
         src=certs/nginx.key 
         dest={{ key_file }}
+    
+    - name: Copiar clave admin
+      copy: 
+        src=website_conf/admin/.htpasswd
+        dest={{ admin_passwd }}
 
     - name: Establecer permisos para el certificado SSL
       file:
@@ -43,7 +55,14 @@
         mode: '0600'
         owner: root
         group: root
-
+    
+    - name: Establecer permisos para las credenciales del admin
+      file:
+        path: "{{ admin_passwd }}"
+        mode: '0644'
+        owner: root
+        group: www-data
+      
     - name: Copiar archivo configuracion nginx
       template: 
         src: website_conf/nginx.conf.j2
@@ -63,7 +82,7 @@
         dest: /var/www/html/
         owner: www-data
         group: www-data
-        mode: '0644'
+        mode: '0755'
       notify:
       - Reiniciar nginx
 

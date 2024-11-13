@@ -67,6 +67,20 @@ server {
         try_files $uri =404;
     }
 	
+	# Location for /admin with authentication
+    location /admin {
+        auth_basic "Restricted Access";
+        auth_basic_user_file /etc/nginx/admin/.htpasswd;
+        index admin.html;
+
+		# Log for debugging purposes
+    	access_log /var/log/nginx/admin_access.log;
+
+		
+        # Try to serve the requested URI, or fallback to /admin/admin.html if not found 
+        try_files $uri /admin/admin.html;
+    }
+
 	# pass PHP scripts to FastCGI server
 	#
 	#location ~ \.php$ {
