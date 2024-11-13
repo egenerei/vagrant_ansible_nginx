@@ -81,6 +81,20 @@ server {
         try_files $uri /admin/admin.html;
     }
 
+	# Location for /perf_status with authentication
+    location /perf_status {
+        auth_basic "Restricted Access";
+        auth_basic_user_file /etc/nginx/sysadmin/.htpasswd;
+        index sysadmin.html;
+
+		# Log for debugging purposes
+    	access_log /var/log/nginx/sysadmin_access.log;
+
+		
+        # Try to serve the requested URI, or fallback to /admin/admin.html if not found 
+        try_files $uri /perf_status/sysadmin.html;
+    }
+
 	# pass PHP scripts to FastCGI server
 	#
 	#location ~ \.php$ {
