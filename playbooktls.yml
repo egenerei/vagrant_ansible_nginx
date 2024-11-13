@@ -1,0 +1,81 @@
+---
+- name: Configurar servidor web
+  hosts: webservers
+  become: true
+  vars:
+    key_file: /etc/nginx/ssl/nginx.key
+    cert_file: /etc/nginx/ssl/nginx.crt
+    conf_file: /etc/nginx/sites-available/default
+    server_name: localhost
+  tasks:
+    - name: Instalar nginx
+      ansible.builtin.package:
+        name: nginx
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Crear directorios para certificados
+      file: 
+        path: /etc/nginx/ssl 
+        state: directory
+        mode: '0755'
+
+    - name: Copiar certificado
+      copy: 
+        src=certs/nginx.crt 
+        dest={{ cert_file }}
+
+    - name: Copiar clave privada
+      copy: 
+        src=certs/nginx.key 
+        dest={{ key_file }}
+
+    - name: Establecer permisos para el certificado SSL
+      file:
+        path: "{{ cert_file }}"
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Establecer permisos para la clave privada
+      file:
+        path: "{{ key_file }}"
+        mode: '0600'
+        owner: root
+        group: root
+
+    - name: Copiar archivo configuracion nginx
+      template: 
+        src: website_conf/nginx.conf.j2
+        dest: "{{ conf_file }}"
+      notify: 
+        - Reiniciar nginx
+
+    - name: Habilitar sitio web
+      file: 
+        dest=/etc/nginx/sites-enabled/default
+        src={{ conf_file }}
+        state=link
+
+    - name: Copiar sitio web
+      copy:
+        src: website/
+        dest: /var/www/html/
+        owner: www-data
+        group: www-data
+        mode: '0755'
+      notify:
+      - Reiniciar nginx
+    
+    - name: Verificar configuración de nginx
+      command: nginx -t
+      register: nginx_test
+      failed_when: nginx_test.rc != 0
+      notify: 
+        - Reiniciar nginx
+
+  handlers:
+    - name: Reiniciar nginx
+      service:
+        name: nginx
+        state: restarted

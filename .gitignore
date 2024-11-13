@@ -1,0 +1,6 @@
+*lock.*.odt#
+.vagrant
+*.key
+*.crt
+*cert*/
+.vscode
